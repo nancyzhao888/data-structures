@@ -10,29 +10,29 @@
 
 var fs = require('fs');
 
-    var meetingsData = JSON.parse(fs.readFileSync("/home/ubuntu/workspace/data/addressArray01.txt"));
+var meetingsData = JSON.parse(fs.readFileSync("/home/ubuntu/workspace/data/addressArray01.txt"));
 
-    // Connection URL
-    var url = 'mongodb://' + process.env.IP + ':27017/aaMeeting';
+// Connection URL
+var url = 'mongodb://' + process.env.IP + ':27017/aaMeeting';
 
-    // Retrieve
-    var MongoClient = require('mongodb').MongoClient; // npm install mongodb
+// Retrieve
+var MongoClient = require('mongodb').MongoClient; // npm install mongodb
 
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
-            return console.dir(err);
-        }
+MongoClient.connect(url, function(err, db) {
+    if (err) {
+        return console.dir(err);
+    }
 
-        var collection = db.collection('meetings');
+    var collection = db.collection('meetings');
 
-        // THIS IS WHERE THE DOCUMENT(S) IS/ARE INSERTED TO MONGO:
-        for (var i = 0; i < meetingsData.length; i++) {
-            collection.insert({
-                meetingName: "",
-                address: meetingsData[i].address,
-                location: meetingsData[i].latLong,
-                time: ""
-            });
-        }
-        db.close();
+    // THIS IS WHERE THE DOCUMENT(S) IS/ARE INSERTED TO MONGO:
+    for (var i = 0; i < meetingsData.length; i++) {
+        collection.insert({
+            meetingName: "",
+            address: meetingsData[i].address,
+            location: meetingsData[i].latLong,
+            time: ""
+        });
+    }
+    db.close();
 }); //request
