@@ -17,7 +17,7 @@ var cleanAddress=[];
 var addresses = JSON.parse(fs.readFileSync("/home/ubuntu/workspace/data/address01_solution.txt"));
 
 for(var i = 0; i<addresses.length; i++) {
-    addresses[i] = addresses[i].substring(0, addresses[i].indexOf(',')) + ' New York, NY,';
+    addresses[i] = addresses[i].substring(0, addresses[i].indexOf(',')) + ', New York, NY';
 }
 
 console.log(addresses);
@@ -25,7 +25,7 @@ console.log(addresses);
 // eachSeries in the async module iterates over an array and operates on each item in the array in series
 // in order not to break the 50 request / second rule
 
-async.eachSeries(addreses, function(value, callback) {
+async.eachSeries(addresses, function(value, callback) {
     var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value.split(' ').join('+') + '&key=' + apiKey;
     var thisMeeting = new Object;
     thisMeeting.address = value;
