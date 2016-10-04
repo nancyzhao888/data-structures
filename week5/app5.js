@@ -54,15 +54,25 @@ for (var i in meetingDetail) {
 
 function cleanDetail(oldDetail) {
     var days = oldDetail.split(" ")[0];
-    var startTime = oldDetail.split(" ")[2];
+    var startHour = oldDetail.split(" ")[2].split(":")[0];
+    var startMinute = oldDetail.split(" ")[2].split(":")[1];
     var startAmPm = oldDetail.split(" ")[3]
-    var endTime = oldDetail.split(" ")[5];
+        if (startAmPm === 'PM' && startHour <= 11) {
+        startHour = String(Number(startHour) + 12);
+    }
+  
+    var endHour = oldDetail.split(" ")[5].split(":")[0];
+    var endMinute = oldDetail.split(" ")[5].split(":")[1];
     var endAmPm = oldDetail.split(" ")[6];
+    if (endAmPm === 'PM' && endHour <= 11) {
+        endHour = String(Number(endHour) + 12);
+    }
+
     var type = oldDetail.split(" ")[9];
     return {
         "days": days,
-        "startTime": startTime + " " + startAmPm,
-        "endTime": endTime + " " + endAmPm,
+        "startTime": startHour + startMinute,
+        "endTime": endHour + endMinute,
         "type": type
     }
 }
@@ -73,6 +83,8 @@ for (var i in meetingDetail) {
     }
     meetingDetailClean.push(meetingDetail[i]);
 }
+
+console.log(meetingDetailClean);
 // CLEAN UP MEETING NAME
 for (var i in meetings) {
   meetingsClean.push(meetings[i].substr(0, meetings[i].indexOf('-') - 1)); // problem with 2 "-"s and removing extra character
