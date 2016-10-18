@@ -6,6 +6,16 @@ var cheerio = require('cheerio'); // npm install cheerio
 // export GMAKEY="AIzaSyA6YtuSbV-HpL_vAO171qL6LdUJxF9PiuM"
 // printenv | grep GMAKEY (to double check if you've successfully stored your Key)
 
+// IN THE MONGO SHELL: 
+//   CREATE DATABASE aaMeeting AND SWITCH TO IT WITH: 
+//      use aaMeeting
+//   CREATE COLLECTION meetings WITH: 
+//      db.createCollection('meetings')
+//   QUERY THE ENTIRE meetings COLLECTION WITH:
+//      db.meetings.find()
+//   COUNT THE NUMBER OF DOCUMENTS IN THE meetings COLLECTION WITH:
+//      db.meetings.find().count()
+
 var apiKey = process.env.GMAKEY; 
 var content = fs.readFileSync('/home/ubuntu/workspace/data/syllabus01.txt');
 var $ = cheerio.load(content);
@@ -22,51 +32,45 @@ $('tbody').find('tr').each(function(i, elem){
         meeting.detail = $(elem).find('div').text().trim().replace('*', "");
      });
      $(elem).find('td').eq(1).each(function(i, elem) {
-        var text = $(elem).contents().text().trim().replace(/[ \t]+/g, " ").replace(/[\r\n|\n]/g, " ").replace('             ',',').replace('            ',',');
-   
-        //for (var j in data) {
-          //  var text = data[j].replace('             ',",").replace('            ',",").split(',')}
-        //console.log(text);
-        var days = text.split(' ');
-        for (var j in days) {
-            for (var v in days[j]) {
-          days[j][v] = days[j][v].match(/days/g)} }
-        //  meeting.days = data[j].split('From')[0].trim(); }
-        // meeting.text = text.split("           ");
-        meeting.days = days;
-        console.log(meeting.days);
+        var text = $(elem).html().replace('\r\n                    \t\t\r\n\t\t\t\t\t', '').replace(/[\r\n\t\/]/g, '').replace(/(<br>)/g, '').replace(/(<b>)/g, '').trim().split('                                               ');
         
-        var start = text.split("             ");
-        for (var k in start) {
-            start[k] = resetTime(start[k].split('From')[1].split('to')[0].trim());
-        }
+        var day = text.slice(0);
+        for(var j=0;j<day.length;j++){
+        day[j] = day[j].substring(0,day[j].indexOf("Meeting Type")).split("From")[0].trim();}
+        meeting.days = day;
+        
+        var start = text.slice(0);
+        for(var k=0;k<start.length;k++){
+        start[k] = resetTime(start[k].substring(0, start[k].indexOf('to')[0]).split('From')[1].trim());}
+        // }
         meeting.start = start;
         
-        var end = text.split("             ");
-        for (var z in end) {
+        var end = text.slice(0);
+        for (var z=0; z<end.length; z++) {
             end[z] = resetTime(end[z].split('From')[1].split('to')[1].split('Meeting Type')[0].trim());
         }
         meeting.end = end;
         
-        var type = text.split("             ");
-        for (var x in type) {
-            type[x] = type[x].split(" ")[9];
+        var type = text.slice(0);
+        for (var x=0; x<type.length; x++) {
+            type[x] = type[x].substring(type[x].indexOf('Type')+4, type[x].indexOf('=')).trim();
         }
         meeting.type = type;
         
-        var special = text.split("            ");
-        for (var y in special) {
+        var special = text.slice(0);
+        for (var y=0; y<special.length; y++) {
             if (special[y].includes('Special Interest') === true) {
             special[y] = special[y].split('Special Interest')[1].trim();
              } else {
-            special[y] = "" }
+            special[y] = null }
         }
         meeting.specialInterest = special;
      });
     meetings.push(meeting);
     });
-    
 
+
+console.log(meetings);
 // CLEAN MEETING NAMES
 
 function groupClean(oldName) {
@@ -88,21 +92,6 @@ function addressClean (oldAddress) {
     return cleanAddress + ", New York, NY";
 }
 
-// CLEAN TIME
-function cleanDetail(oldDetail) {
-    
-
-    var type = oldDetail.split(" ")[9];
-    var specialInterest;
-    
-    if (oldDetail.includes('Special Interest') === true) {
-    specialInterest = oldDetail.split('Special Interest')[1].trim();
-    } else {
-    specialInterest = null}
-    
-    return {
-    };
-}
 
 function resetTime(time) {
     var hours = time.split(':')[0];
@@ -114,19 +103,37 @@ function resetTime(time) {
     return Number(hours + minutes);
 }
 
-console.log (meetings);
 
-async.eachObject(meetings, function(value, key, callback) {
+async.eachSeries(meetings, function(value, key, callback) {
     var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value.address.split(' ').join('+') + '&key=' + apiKey;
     request(apiRequest, function(err, resp, body) {
         if (err) { throw err; }
         // Assign latLong data to current meeting object
         value.latLong = JSON.parse(body).results[0].geometry.location;
     });
-    // Not sure but I think the the callback delay isn't working because the data came out immediately
     setTimeout(callback, 2000);
 }, function() {
     console.log(meetings);
-    
+    fs.writeFileSync('/home/ubuntu/workspace/data/meetings.txt', JSON.stringify(meetings));
 });
     
+// ------------------
+
+var url = 'mongodb://' + process.env.IP + ':27017/aaMeeting';
+
+var MongoClient = require('mongodb').MongoClient; 
+
+MongoClient.connect(url, function(err, db) {
+    if (err) {
+        return console.dir(err);
+    }
+
+    var collection = db.collection('meetings');
+
+    // THIS IS WHERE THE DOCUMENT(S) WHERE INSERTED TO MONGO:
+
+    collection.insertMany(meetings);
+    console.log("Inserted " + meetings.length + " into the document collection");
+    db.close();
+    
+    }); //MongoClient.connect
