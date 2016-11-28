@@ -8,7 +8,7 @@
 //   COUNT THE NUMBER OF DOCUMENTS IN THE stations COLLECTION WITH:
 //      db.stations.find().count()
 
-var request = require('request');
+var request = require('request'); // npm install request
 
 request('https://www.citibikenyc.com/stations/json', function(error, response, body) {
     var stationData = JSON.parse(body);

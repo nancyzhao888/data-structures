@@ -44,7 +44,7 @@ $('tbody').find('tr').each(function(i, elem){
 // console.log(time.length); // print number of meetings in meetings array
 
 
-// CLEAN UP MEETING TIME
+// CLEAN UP MEETING TIME INTO MILITARY TIME
 for (var i in meetingDetail) {
     meetingDetail[i] = meetingDetail[i].split("           ");
     for (var j in meetingDetail[i]) {
@@ -94,9 +94,9 @@ for (var i in meetings) {
 for(var i = 0; i<addresses.length; i++) {
     addresses[i] = addresses[i].substring(0, addresses[i].indexOf(',')) + ', New York, NY';
 }
-console.log(addresses);
 
 // CALL API 
+
 async.eachSeries(addresses, function(value, callback) {
     var apiRequest = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + value.split(' ').join('+') + '&key=' + apiKey;
     var thisMeeting = new Object;
@@ -108,9 +108,9 @@ async.eachSeries(addresses, function(value, callback) {
         meetingsAddress.push(thisMeeting);
     });
     setTimeout(callback, 1500);
+}, function() {
+    console.log(meetingsAddress)
 });
-
-console.log(meetingsAddress);
 
 // INSERT DOCUMENTS INTO MONGO
 
@@ -128,8 +128,8 @@ MongoClient.connect(url, function(err, db) {
 
     // THIS IS WHERE THE DOCUMENT(S) IS/ARE INSERTED TO MONGO:
     
-    for (var i = 0; i < meetingsAddress.length; i++) {
-        collection.insert({
+   for (var i = 0; i < 23; i++) {
+       collection.insert({
             meetingName: meetingsClean[i],
             location:locations[i],
             address: meetingsAddress[i].address,
@@ -141,3 +141,4 @@ MongoClient.connect(url, function(err, db) {
     }
     db.close();
 }); 
+

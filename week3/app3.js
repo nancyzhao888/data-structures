@@ -36,8 +36,8 @@ async.eachSeries(addresses, function(value, callback) {
         meetingsData.push(thisMeeting);
     });
     setTimeout(callback, 1500);
-}, function() {
-    //console.log(meetingsData);
+ }, function() {
+//     //console.log(meetingsData);
     fs.writeFileSync('/home/ubuntu/workspace/data/addressArray01.txt', JSON.stringify(meetingsData));
 });
 // think about how you want to structure your arrays, in terms of hierarchy
