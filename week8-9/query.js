@@ -20,13 +20,13 @@ pg.connect(conString, function(err, client, done) {
     }
 
     // query can also mean putting things into something (instead of just taking things out)
-    client.query(insertIntoQuery, function(err, result) {
+    client.query(query, function(err, result) {
         //call `done()` to release the client back to the pool
         done();
 
         if (err) {
             return console.error('error running query', err);
         }
-        console.log(result);
+        console.log(result.rows);
     });
 });
