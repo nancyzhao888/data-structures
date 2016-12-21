@@ -28,35 +28,44 @@ var server = http.createServer(function(req, res) {
             return console.dir(err);
         }
         
-        // var dateTimeNow = new Date();
-        // var today = dateTimeNow.getDay();
-        // var tomorrow;
-        // if (today == 6) {tomorrow = 0;}
-        // else {tomorrow = today + 1}
-        // var hour = (dateTimeNow.getHours() - 5) * 100;
+        // obtain and format day and time for aggregation
         
-        // var weekday = new Array(7);
-        // weekday[0] = "Sunday";
-        // weekday[1] = "Monday";
-        // weekday[2] = "Tuesday";
-        // weekday[3] = "Wednesday";
-        // weekday[4] = "Thursday";
-        // weekday[5] = "Friday";
-        // weekday[6] = "Saturday";
+        var dateTimeNow = new Date();
+        var today = dateTimeNow.getDay();
+        var tomorrow;
+        if (today == 6) {tomorrow = 0;}
+        else {tomorrow = today + 1}
+        var hour = (dateTimeNow.getHours() - 5) * 100;
         
-        // today = weekday[today] + "s";
-        // tomorrow = weekday[tomorrow] + "s";
+        var weekday = new Array(7);
+        weekday[0] = "Sunday";
+        weekday[1] = "Monday";
+        weekday[2] = "Tuesday";
+        weekday[3] = "Wednesday";
+        weekday[4] = "Thursday";
+        weekday[5] = "Friday";
+        weekday[6] = "Saturday";
+        
+        today = weekday[today] + "s";
+        tomorrow = weekday[tomorrow] + "s";
+        
+        console.log(today);
+        console.log(tomorrow);
+        console.log(hour);
         
         var collection = db.collection('meetings');
     
         collection.aggregate([
-    
+        
+        // unwind array of days, and obtain corresponding index
         {
             $unwind: {
                 path: "$days",
                 includeArrayIndex: "idx"
             }
         },
+        
+        //break each individual meeting into objects
         {
             $project: {
                 _id: 1,
@@ -73,29 +82,30 @@ var server = http.createServer(function(req, res) {
 		        latLong: 1,
             }
         },
-
+        
+        // filter by current time and day
+        {
+            $match : 
+                { $or : [
+                    { $and: [
+                        { days : today } , { start: { $gte: hour } }
+                    ]},
+                    { $and: [
+                        { days : tomorrow } , { start : { $lte: 400 } }
+                    ]}
+                ]}
+        },
             
-            // { $match : 
-            //     { $or : [
-            //         { $and: [
-            //             { dayQuery : today } , { hourQuery : { $gte: hour } }
-            //         ]},
-            //         { $and: [
-            //             { dayQuery : tomorrow } , { hourQuery : { $lte: 400 } }
-            //         ]}
-            //     ]}
-            // },
-            
-            
-            { 
-                $group : {  _id : { 
-                    latLong: "$latLong",
-                    meetingGroup: "$groupName",
-                    meetingHouse: "$locationName",
-                    meetingAddress: "$address",
-                    // specialInterest: "$specialInterest",
-                    meetingDetails: "$detail",
-                    meetingWheelchair: "$accessibility"
+         // group by meeting groups & address  
+        { 
+            $group : {  _id : { 
+                latLong: "$latLong",
+                meetingGroup: "$groupName",
+                meetingHouse: "$locationName",
+                meetingAddress: "$address",
+                // specialInterest: "$specialInterest",
+                meetingDetails: "$detail",
+                meetingWheelchair: "$accessibility"
             }, 
                 meetingDay : { $push : "$days" },
                 startTime: { $push : "$start" },
@@ -123,7 +133,7 @@ var server = http.createServer(function(req, res) {
             }
 
             else {
-                //fs.writeFileSync('/home/ubuntu/workspace/final1/output_all.txt', JSON.stringify(docs)); // save results to text file
+                fs.writeFileSync('/home/ubuntu/workspace/final1/output_Wed.txt', JSON.stringify(docs)); // save results to text file
                 //res.writeHead(200, {"Content-Type": "application/json"});
                 //res.end(JSON.stringify(docs));
                 res.writeHead(200, {
