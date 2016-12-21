@@ -1,14 +1,15 @@
 # Final Project Two
 
-### [App]()
+### [App](https://data-structures-2-nancyzhao888.c9users.io)
 
 ### Collecting Data with Potentiometer
-![Potentiometer](http://nancyzhao888.github.io/data-structures/final2/IMG_0656.JPG)
+![alt tag](https://raw.githubusercontent.com/nancyzhao888/data-structures/master/final2/IMG_0656.JPG)
 
-*I built a metronome with the potentiometer and button. By turning the knob, I could control the frequence of the LED blinking to match the tempo of the song playing. By pressing the button and through a formula in the program, I am able to record the bpm of the song. 
+* I built a metronome with the potentiometer and button. By turning the knob, I could control the frequence of the LED blinking to match the tempo of the song playing. By pressing the button and through a formula in the program, I am able to record the bpm of the song. 
 
 ### Design Sketch
-![Vizualization Sketch](http://nancyzhao888.github.io/data-structures/final2/music.png)
+![My image](https://raw.githubusercontent.com/nancyzhao888/data-structures/master/final2/music.png)
+
 
 ### Contents of Postgres Database 
 
